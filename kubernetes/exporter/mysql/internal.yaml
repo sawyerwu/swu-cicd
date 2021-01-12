@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-metrics
+  namespace: monitoring
+  labels:
+    k8s-app: mysql-metrics
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: mysql-metrics
+  template:
+    metadata:
+      labels:
+        k8s-app: mysql-metrics
+    spec:
+      containers:
+      - name: mysql-exporter
+        image: prom/mysqld-exporter
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9104
+          protocol: TCP
+        env:
+        - name: DATA_SOURCE_NAME
+          value: exporter:123456@(47.99.108.202:3306)/
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: mysql-metrics
+  namespace: monitoring
+  labels:
+    k8s-app: mysql-metrics
+spec:
+  ports:
+    - name: metrics
+      protocol: TCP
+      port: 9104
+      targetPort: 9104
+  selector:
+    k8s-app: mysql-metrics
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    k8s-app: mysql-metrics
+  name: mysql-metrics
+  namespace: monitoring
+spec:
+  endpoints:
+    - interval: 10s
+      path: /metrics
+      port: metrics
+  namespaceSelector:
+    matchNames:
+      - monitoring
+  selector:
+    matchLabels:
+      k8s-app: mysql-metrics
+  targetLabels:
+    - k8s-app
+
