@@ -93,3 +93,12 @@ kubeadm join 192.168.0.196:6443 --token nkkf8u.6togedoecr5shtgy \
     --discovery-token-ca-cert-hash sha256:a641ff9499341d7e2d025437bf6629f9a604a3c9976f19fbbe567732faeb965f
 
 
+mkdir -p $HOME/.kube
+// copy $HOME/.kube/config from master to node
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+---
+
+yum install bash-completion -y
+source /usr/share/bash-completion/bash_completion
+source <(kubectl completion bash)
